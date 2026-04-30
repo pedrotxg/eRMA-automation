@@ -1,9 +1,13 @@
 from playwright.sync_api import Page, sync_playwright
 from datetime import datetime
+from dotenv import load_dotenv
+from time import sleep
 
 import os
 import sys
 sys.path.insert(0,"")
+load_dotenv()
+
 from utils.pw import PlaywrightUtils
 from fields import eRMA
 
@@ -36,7 +40,7 @@ class SystemERMA:
         self._serial_number=None
         self._part_number=None
         self._max_realease_date=None
-        
+        self._contains_R=False
 
     def login(self) -> None:
         self.page.goto(os.getenv("LOGIN_URL"))
@@ -119,12 +123,13 @@ class SystemERMA:
         self.pw.wait_load()
 
         self.pw.fill(seletor=eRMA.PLM_ECO.ID_PART_NUMBER_INPUT, texto=self._part_number)
-        self.pw.fill(seletor=eRMA.PLM_ECO.ID_START_REALESE_DATE, texto=datetime.strftime(self._max_realease_date, "%Y-%m-%d"))
+        self.pw.fill(seletor=eRMA.PLM_ECO.ID_START_REALESE_DATE, texto="2025-04-18")   #datetime.strftime(self._max_realease_date, "%Y-%m-%d"))
+        sleep(0.2)
+
         self.pw.click(seletor=eRMA.PLM_ECO.CLASS_BUTTON_SEARCH)
         self.pw.wait_load()
 
         self._page_consulted="PLM ECO"
-        self._part_number=part_number
         self._part_number_consulted=True
 
     def get_part_number_datas(self, part_number:str = None, max_realease_date:datetime = None):
@@ -142,8 +147,36 @@ class SystemERMA:
             else:
                 raise RuntimeError("Cannot proceed without a Search Part Number in PLM ECO.")
 
-        ...
+        rows = erma.pw.get_locator(eRMA.PLM_ECO.LOCATOR_RMA_TABLE)
+        part_number_data = []
 
+        for i in range(1, rows.count()):
+            row = rows.nth(i)
+            texts = row.locator("td").all_inner_texts()
+
+            if len(texts) >= 8:
+                part_number_data.append({
+                    "id": texts[0].strip(),
+                    "part_number": texts[1].strip(),
+                    "hw": texts[2].strip(),
+                    "eco": texts[3].strip(),
+                    "status": texts[4].strip(),
+                    "cut_in_board": texts[5].strip(),
+                    "cut_in_system": texts[6].strip(),
+                    "release_date": texts[7].strip(),
+                })
+
+        return part_number_data
+
+    def verify_R_or_S(self, text:str):
+        if '(R)' in text or '(S)' in text:
+            return True
+        return False
+
+class SerialNumber:
+    def __init__(self):
+        #passar args fixos
+        pass
 
 if __name__ == "__main__":
     nav = Navegador(headless=False)
@@ -152,4 +185,11 @@ if __name__ == "__main__":
     erma.search_serial_number(serial_number=os.getenv("SERIAL_NUMBER"))
     serial_number_data = erma.get_product_information()
     erma.search_part_number()
+    part_number_data = erma.get_part_number_datas()
+    
+    for line in part_number_data:
+        if erma.verify_R_or_S(line['cut_in_board']) or erma.verify_R_or_S(line['cut_in_system']):
+            erma._contains_R=True
+            ...
+
     ...

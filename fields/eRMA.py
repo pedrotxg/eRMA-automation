@@ -36,4 +36,6 @@ class PLM_ECO:
     ID_START_REALESE_DATE="#Start_DT"
     ID_END_REALESE_DATE="#End_DT"
     CLASS_BUTTON_SEARCH="button.btn.btn-primary"
+    
+    LOCATOR_RMA_TABLE="table.rma_table.top10 tbody tr"
 ...

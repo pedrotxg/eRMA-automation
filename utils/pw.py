@@ -100,6 +100,10 @@ class PlaywrightUtils:
         """Retorna o texto de um elemento."""
         return self.page.locator(seletor).inner_text()
     
+    def get_locator(self, seletor: str) -> str:
+        """Retorna o texto de um elemento."""
+        return self.page.locator(seletor)
+    
     def get_text_by_pos(self, seletor: str, pos: int, parent_element: bool=False) -> str:
         """Retorna o texto de um elemento baseado em sua posição"""
         if not parent_element:
