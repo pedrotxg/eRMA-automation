@@ -147,3 +147,4 @@ generated/
 backup/
 data/
 cache/
+*.xlsx

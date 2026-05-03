@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0,"")
 load_dotenv()
 
+from automation.product import Product
 from utils.pw import PlaywrightUtils
 from fields import eRMA
 
@@ -21,12 +22,22 @@ class Navegador:
     def new_page(self) -> Page:
         return self.browser.new_page()
     
+    def close_page(self) -> None:
+        self.browser.close()
+    
     def close(self) -> None:
         self.browser.close()
         self.playwright.stop()
+        
+    def reset_page(self) -> Page:
+        if self.page:
+            self.page.close()
+
+        self.page = self.browser.new_page()
+        return self.page
 
 class SystemERMA:
-    def __init__(self, page:Page):
+    def __init__(self, page:Page, product:Product = Product()):
         self.page = page
         self.pw = PlaywrightUtils(page=self.page)
 
@@ -36,11 +47,8 @@ class SystemERMA:
         self._serial_number_consulted=False
         self._part_number_consulted=False
 
-        # Data
-        self._serial_number=None
-        self._part_number=None
-        self._max_realease_date=None
-        self._contains_R=False
+        # Product
+        self._product=product
 
     def login(self) -> None:
         self.page.goto(os.getenv("LOGIN_URL"))
@@ -51,8 +59,8 @@ class SystemERMA:
         self.pw.click(seletor=eRMA.LOGIN.CLASS_NAME_BUTTON_LOGIN)
         self.pw.wait_load()
 
-        self._page_consulted="Login"
         self._logged=True
+        self._page_consulted="Login"
     
     def search_serial_number(self, serial_number:str) -> None:
         self.page.goto(os.getenv("SEARCH_SERIAL_NUMBER"))
@@ -62,28 +70,25 @@ class SystemERMA:
         self.pw.click(seletor=eRMA.WARRANTY_LOOKUP.ID_SEARCH_BUTTON)
         self.pw.wait_load()
 
-        self._page_consulted="Search Serial Number"
-        self._serial_number=serial_number
         self._serial_number_consulted=True
+        self._page_consulted="Search Serial Number"
+
+        self._product._serial_number=serial_number
 
     def get_product_information(self, serial_number:str = None) -> dict[str]:
         if not self._serial_number_consulted:
             if serial_number:
-                self._serial_number= serial_number
+                self._product._serial_number= serial_number
 
-            if self._serial_number:
-                self.search_serial_number(serial_number=self._serial_number)
+            if self._product._serial_number:
+                self.search_serial_number(serial_number=self._product._serial_number)
             else:
                 raise RuntimeError("Cannot proceed without a Serial Number.")
 
         part_number=self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["pos"], parent_element=True).split(":")[1].strip()
         max_realease_date = self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["pos"], parent_element=True).split(":")[1].strip()
 
-        self._page_consulted="Warranty Lookup"
-        self._part_number=part_number
-        self._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
-
-        return{
+        serial_number_data = {
             "product_information": {
                 "serial_number":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.SERIAL_NUMBER["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.SERIAL_NUMBER["pos"], parent_element=True).split(":")[1].strip(),
                 "product_name":part_number,
@@ -106,49 +111,58 @@ class SystemERMA:
             }
         }
 
+        self._page_consulted="Warranty Lookup"
+
+        self._product._part_number=part_number
+        self._product._serial_number_data=serial_number_data
+        self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
+
+        return serial_number_data
+
     def search_part_number(self, part_number:str = None, max_realease_date:datetime = None) -> None:
-        if not self._part_number:
+        if not self._product._part_number:
             if part_number:
-                self._part_number=part_number
+                self._product._part_number=part_number
             else:
                 raise RuntimeError("Cannot proceed without a Part Number.")
 
-        if not self._max_realease_date:
+        if not self._product._max_realease_date:
             if max_realease_date:
-                self._max_realease_date=max_realease_date
+                self._product._max_realease_date=max_realease_date
             else:
                 raise RuntimeError("Cannot proceed without a Realese Date.")
 
         self.page.goto(os.getenv("SEARCH_PART_NUMBER"))
         self.pw.wait_load()
 
-        self.pw.fill(seletor=eRMA.PLM_ECO.ID_PART_NUMBER_INPUT, texto=self._part_number)
-        self.pw.fill(seletor=eRMA.PLM_ECO.ID_START_REALESE_DATE, texto="2025-04-18")   #datetime.strftime(self._max_realease_date, "%Y-%m-%d"))
+        self.pw.fill(seletor=eRMA.PLM_ECO.ID_PART_NUMBER_INPUT, texto=self._product._part_number)
+        self.pw.fill(seletor=eRMA.PLM_ECO.ID_START_REALESE_DATE, texto=datetime.strftime(self._product._max_realease_date,"%Y-%m-%d"))
         sleep(0.2)
 
         self.pw.click(seletor=eRMA.PLM_ECO.CLASS_BUTTON_SEARCH)
         self.pw.wait_load()
 
-        self._page_consulted="PLM ECO"
         self._part_number_consulted=True
+        self._page_consulted="PLM ECO"
 
     def get_part_number_datas(self, part_number:str = None, max_realease_date:datetime = None):
         if not self._part_number_consulted:
-            if not self._part_number:
+            if not self._product._part_number:
                 if part_number:
-                    self._part_number=part_number
+                    self._product._part_number=part_number
 
-            if not self._max_realease_date:
+            if not self._product._max_realease_date:
                 if max_realease_date:
-                    self._max_realease_date=max_realease_date
+                    self._product._max_realease_date=max_realease_date
 
-            if self._part_number and self._max_realease_date:
-                self.search_part_number(part_number=self._part_number, max_realease_date=self._max_realease_date)
+            if self._product._part_number and self._product._max_realease_date:
+                self.search_part_number(part_number=self._product._part_number, max_realease_date=self._product._max_realease_date)
             else:
                 raise RuntimeError("Cannot proceed without a Search Part Number in PLM ECO.")
 
-        rows = erma.pw.get_locator(eRMA.PLM_ECO.LOCATOR_RMA_TABLE)
+        rows = self.pw.get_locator(eRMA.PLM_ECO.LOCATOR_RMA_TABLE)
         part_number_data = []
+        part_number_data_with_R_or_C=[]
 
         for i in range(1, rows.count()):
             row = rows.nth(i)
@@ -166,30 +180,30 @@ class SystemERMA:
                     "release_date": texts[7].strip(),
                 })
 
-        return part_number_data
+        for line in part_number_data:
+            self.verify_R_or_C_in_text(line['cut_in_board'])
+            self.verify_R_or_C_in_text(line['cut_in_system'])
+            
+            if self._product._contains_R or self._product._contains_C:
+                part_number_data_with_R_or_C.append(texts)
 
-    def verify_R_or_S(self, text:str):
-        if '(R)' in text or '(S)' in text:
-            return True
-        return False
+        return_part_number = {
+            "contains_R_or_C": True if self._product._contains_R or self._product._contains_C else False,
+            "part_number_data_with_R_or_C": part_number_data_with_R_or_C,
+        }
 
-class SerialNumber:
-    def __init__(self):
-        #passar args fixos
-        pass
+        self._product._part_number_data=return_part_number
+        self._product._part_number_data_with_R_or_C=part_number_data_with_R_or_C
+
+        return return_part_number
+
+    def verify_R_or_C_in_text(self, text:str) -> None:
+        if '(R)' in text:
+            self._product._contains_R=True
+
+        elif'(C)' in text:
+            self._product._contains_C=True
+
 
 if __name__ == "__main__":
-    nav = Navegador(headless=False)
-    erma = SystemERMA(page=nav.page)
-    erma.login()
-    erma.search_serial_number(serial_number=os.getenv("SERIAL_NUMBER"))
-    serial_number_data = erma.get_product_information()
-    erma.search_part_number()
-    part_number_data = erma.get_part_number_datas()
-    
-    for line in part_number_data:
-        if erma.verify_R_or_S(line['cut_in_board']) or erma.verify_R_or_S(line['cut_in_system']):
-            erma._contains_R=True
-            ...
-
-    ...
+    pass
