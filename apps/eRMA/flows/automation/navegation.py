@@ -8,9 +8,9 @@ import sys
 sys.path.insert(0,"")
 load_dotenv()
 
-from automation.product import Product
-from utils.pw import PlaywrightUtils
-from fields import eRMA
+from apps.eRMA.flows.automation.product import Product
+from apps.eRMA.flows.utils.pw import PlaywrightUtils
+from apps.eRMA.flows.fields import eRMA
 
 
 class Navegador:
@@ -58,6 +58,8 @@ class SystemERMA:
         self.pw.fill(seletor=eRMA.LOGIN.ID_PASSWORD_INPUT, texto=os.getenv("USER_PASSWORD"))
         self.pw.click(seletor=eRMA.LOGIN.CLASS_NAME_BUTTON_LOGIN)
         self.pw.wait_load()
+
+        self.page.context.storage_state(path="auth.json")
 
         self._logged=True
         self._page_consulted="Login"
@@ -118,6 +120,12 @@ class SystemERMA:
         self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
 
         return serial_number_data
+
+    def get_product_name(self):
+        ...
+
+    def get_mo_date(self):
+       ...
 
     def search_part_number(self, part_number:str = None, max_realease_date:datetime = None) -> None:
         if not self._product._part_number:
@@ -204,6 +212,79 @@ class SystemERMA:
         elif'(C)' in text:
             self._product._contains_C=True
 
+#
+
+class Nav:
+    def __init__(self, headless=True):
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch(headless=headless)
+        self.context = self.browser.new_context()
+        self.page = self.context.new_page()
+
+    def reset_page(self):
+        if self.page:
+            self.page.close()
+
+        self.page = self.context.new_page()
+        return self.page
+
+    def close(self):
+        self.context.close()
+        self.browser.close()
+        self.playwright.stop()
+
+class SessionManager:
+    _instance = None
+
+    def __init__(self):
+        self.nav = Navegador(headless=True)
+        self.erma = SystemERMA(page=self.nav.page)
+        self.login()
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+
+        return cls._instance
+
+    def login(self):
+        self.erma.page = self.nav.page
+        self.erma.login()
+
+    def is_logged(self):
+        try:
+            return "login" not in self.nav.page.url.lower()
+
+        except:
+            return False
+
+    def ensure_login(self):
+        if not self.is_logged():
+            self.nav.reset_page()
+            self.erma.page = self.nav.page
+            self.login()
+
+    def reset_page(self):
+        self.nav.reset_page()
+        self.erma.page = self.nav.page
+        self.erma.pw = PlaywrightUtils(page=self.nav.page)
+
 
 if __name__ == "__main__":
-    pass
+    import time
+    inicio = time.time()
+
+    nav = Navegador(headless=True)
+    product = Product()
+
+    erma = SystemERMA(page=nav.page, product=product)
+    erma.login()
+
+    erma.search_serial_number(serial_number=os.getenv('SERIAL_NUMBER'))
+    erma.get_product_information()
+    
+    fim = time.time()
+    tempo_execucao = fim - inicio
+    print(f"Tempo de execução: {tempo_execucao:.2f} segundos")
+    ...

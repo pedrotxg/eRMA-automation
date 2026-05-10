@@ -1,17 +1,21 @@
+import os
 import sys
 sys.path.insert(0,"")
 import pandas as pd
 
-from utils.utils import import_files, export_files, format_values_for_return
+from apps.eRMA.flows.utils.utils import import_files, export_files, format_values_for_return
 
-from automation import navegation
-from automation.product import Product
+from apps.eRMA.flows.automation import navegation
+from apps.eRMA.flows.automation.product import Product
+
+PATH_FILE=os.getenv('PATH_FILE')
+PATH_SAVE=os.getenv('PATH_SAVE')
 
 if __name__ == "__main__":
     nav = navegation.Navegador(headless=False)
     product = Product()
 
-    base_sn = import_files("C:\\0 - Desenvolvimento\\auto-advantech\\0007552874.xlsx")
+    base_sn = import_files(PATH_FILE)
     base_sn["Contains_C"] = pd.NA
     base_sn["Contains_R"] = pd.NA
     base_sn["DateMaxSearch"] = pd.NA
@@ -41,7 +45,7 @@ if __name__ == "__main__":
         # Just testing
         export_files(
             df=base_sn,
-            path="C:\\0 - Desenvolvimento\\auto-advantech\\retorno.xlsx"
+            path=PATH_SAVE
         )
 
     ...

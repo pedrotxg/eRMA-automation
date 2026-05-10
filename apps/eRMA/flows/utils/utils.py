@@ -1,8 +1,8 @@
 from pandas import DataFrame
 from datetime import datetime
 
-from utils.pd import PandasUtils
-from automation.product import Product
+from apps.eRMA.flows.utils.pd import PandasUtils
+from apps.eRMA.flows.automation.product import Product
 
 
 def import_files(path: str):
