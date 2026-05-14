@@ -136,7 +136,9 @@ class SystemERMA:
 
         self._product._part_number=part_number
         self._product._serial_number_data=serial_number_data
-        self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
+
+        if max_realease_date != "None MO_DATE":
+            self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
 
         return serial_number_data
 
