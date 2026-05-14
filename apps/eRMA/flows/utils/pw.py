@@ -104,6 +104,10 @@ class PlaywrightUtils:
         """Retorna o texto de um elemento."""
         return self.page.locator(seletor)
     
+    def get_locator_visible(self, seletor: str) -> str:
+        """Retorna o texto de um elemento."""
+        return self.page.locator(seletor).is_visible()
+    
     def get_text_by_pos(self, seletor: str, pos: int, parent_element: bool=False) -> str:
         """Retorna o texto de um elemento baseado em sua posição"""
         if not parent_element:
@@ -132,6 +136,13 @@ class PlaywrightUtils:
     def validate_text(self, seletor: str, texto_esperado: str):
         """Valida texto de um elemento."""
         expect(self.page.locator(seletor)).to_have_text(texto_esperado)
+        
+    def has_text(self, seletor: str, texto_esperado: str) -> bool:
+        try:
+            texto = self.page.locator(seletor).inner_text(timeout=4000)
+            return texto_esperado in texto
+        except:
+            return False
 
     def validate_visible(self, seletor: str):
         """Valida se elemento está visível."""

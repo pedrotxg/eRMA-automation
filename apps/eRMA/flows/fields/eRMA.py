@@ -6,6 +6,7 @@ class LOGIN:
 class WARRANTY_LOOKUP:
     ID_SEARCH_INPUT="#searchData"
     ID_SEARCH_BUTTON="#warranty_submit"
+    WRONG_BARCODE_NO = {"seletor":".alertinfo", "texto": "Wrong Barcode No"}
 
 class SERIAL_NUMBER_INFORMATION:
     class PRODUCT:

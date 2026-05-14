@@ -72,10 +72,23 @@ class SystemERMA:
         self.pw.click(seletor=eRMA.WARRANTY_LOOKUP.ID_SEARCH_BUTTON)
         self.pw.wait_load()
 
-        self._serial_number_consulted=True
-        self._page_consulted="Search Serial Number"
+        if self.pw.has_text(seletor=eRMA.WARRANTY_LOOKUP.WRONG_BARCODE_NO["seletor"], texto_esperado=eRMA.WARRANTY_LOOKUP.WRONG_BARCODE_NO["texto"]):
+            #page
+            self._serial_number_consulted=False
+            self._page_consulted="Invalid Serial Number"
 
-        self._product._serial_number=serial_number
+            #product
+            self._product._valid_serial_number=False
+            self._product._serial_number=serial_number
+
+        else:
+            #page
+            self._serial_number_consulted=True
+            self._page_consulted="Search Serial Number"
+
+            #product
+            self._product._valid_serial_number=True
+            self._product._serial_number=serial_number
 
     def get_product_information(self, serial_number:str = None) -> dict[str]:
         if not self._serial_number_consulted:
@@ -94,22 +107,22 @@ class SystemERMA:
             "product_information": {
                 "serial_number":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.SERIAL_NUMBER["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.SERIAL_NUMBER["pos"], parent_element=True).split(":")[1].strip(),
                 "product_name":part_number,
-                "bios_version":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.BIOS_VERSION["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.BIOS_VERSION["pos"], parent_element=True).split(":")[1].strip(),
-                "hw_verion":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.H_W_VERSION["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.H_W_VERSION["pos"], parent_element=True).split(":")[1].strip(),
+                # "bios_version":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.BIOS_VERSION["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.BIOS_VERSION["pos"], parent_element=True).split(":")[1].strip(),
+                # "hw_verion":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.H_W_VERSION["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.H_W_VERSION["pos"], parent_element=True).split(":")[1].strip(),
             },
             "warranty_information": {
                 "serial_number":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SERIAL_NUMBER["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SERIAL_NUMBER["pos"], parent_element=True).split(":")[1].strip(),
                 "product_name":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.PRODUCT_NAME["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.PRODUCT_NAME["pos"], parent_element=True).split(":")[1].strip(),
-                "shipping_date":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SHIPPING_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SHIPPING_DATE["pos"], parent_element=True).split(":")[1].strip(),
-                "hw_verion":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.H_W_VERSION["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.H_W_VERSION["pos"], parent_element=True).split(":")[1].strip(),
-                "warranty":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.WARRANTY["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.WARRANTY["pos"], parent_element=True).split(":")[1].strip(),
-                "bios":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.BIOS["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.BIOS["pos"], parent_element=True).split(":")[1].strip(),
-                "sales_order":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SALES_ORDER["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SALES_ORDER["pos"], parent_element=True).split(":")[1].strip(),
-                "customet_no":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUSTOMER_NO["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUSTOMER_NO["pos"], parent_element=True).split(":")[1].strip(),
+                # "shipping_date":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SHIPPING_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SHIPPING_DATE["pos"], parent_element=True).split(":")[1].strip(),
+                # "hw_verion":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.H_W_VERSION["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.H_W_VERSION["pos"], parent_element=True).split(":")[1].strip(),
+                # "warranty":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.WARRANTY["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.WARRANTY["pos"], parent_element=True).split(":")[1].strip(),
+                # "bios":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.BIOS["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.BIOS["pos"], parent_element=True).split(":")[1].strip(),
+                # "sales_order":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SALES_ORDER["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.SALES_ORDER["pos"], parent_element=True).split(":")[1].strip(),
+                # "customet_no":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUSTOMER_NO["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUSTOMER_NO["pos"], parent_element=True).split(":")[1].strip(),
                 "mo_date":max_realease_date,
-                "mo":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O["pos"], parent_element=True).split(":")[1].strip(),
-                "cust_sn":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_S_N["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_S_N["pos"], parent_element=True).split(":")[1].strip(),
-                "cust_pn":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_P_N["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_P_N["pos"], parent_element=True).split(":")[1].strip(),
+                # "mo":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O["pos"], parent_element=True).split(":")[1].strip(),
+                # "cust_sn":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_S_N["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_S_N["pos"], parent_element=True).split(":")[1].strip(),
+                # "cust_pn":self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_P_N["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.CUST_P_N["pos"], parent_element=True).split(":")[1].strip(),
             }
         }
 
@@ -202,6 +215,7 @@ class SystemERMA:
 
         self._product._part_number_data=return_part_number
         self._product._part_number_data_with_R_or_C=part_number_data_with_R_or_C
+        self._product._success=True
 
         return return_part_number
 
