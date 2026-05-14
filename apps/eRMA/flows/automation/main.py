@@ -57,6 +57,7 @@ if __name__ == "__main__":
                 base_sn.loc[i, "Success"] = 0
                 base_sn.loc[i, "Contains_C"] = "INVALID_SERIAL_NUMBER"
                 base_sn.loc[i, "Contains_R"] = "INVALID_SERIAL_NUMBER"
+                base_sn.loc[i, "ECO"] = ""
                 base_sn.loc[i, "DateMaxSearch"] = "INVALID_SERIAL_NUMBER"
                 export_files(df=base_sn, path=str(output_file))
                 product._clear_data()
@@ -69,6 +70,7 @@ if __name__ == "__main__":
                 base_sn.loc[i, "Success"] = 1
                 base_sn.loc[i, "Contains_C"] = 0
                 base_sn.loc[i, "Contains_R"] = 0
+                base_sn.loc[i, "ECO"] = ""
                 base_sn.loc[i, "DateMaxSearch"] = "SEM_MO_DATE"
                 export_files(df=base_sn, path=str(output_file))
                 product._clear_data()
@@ -90,6 +92,7 @@ if __name__ == "__main__":
             base_sn.loc[i, "Success"] = 0
             base_sn.loc[i, "Contains_C"] = "EXECUTION_ERROR"
             base_sn.loc[i, "Contains_R"] = "EXECUTION_ERROR"
+            base_sn.loc[i, "ECO"] = ""
             base_sn.loc[i, "DateMaxSearch"] = str(e)
 
             export_files(df=base_sn, path=str(output_file))

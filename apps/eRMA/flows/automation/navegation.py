@@ -210,9 +210,10 @@ class SystemERMA:
         for line in part_number_data:
             self.verify_R_or_C_in_text(line['cut_in_board'])
             self.verify_R_or_C_in_text(line['cut_in_system'])
-            
+
             if self._product._contains_R or self._product._contains_C:
-                part_number_data_with_R_or_C.append(texts)
+                part_number_data_with_R_or_C.append(line)
+                self._product._eco=line["eco"]
 
         return_part_number = {
             "contains_R_or_C": True if self._product._contains_R or self._product._contains_C else False,

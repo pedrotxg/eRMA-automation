@@ -3,6 +3,7 @@ class Product:
         self._serial_number=None
         self._part_number=None
         self._max_realease_date=None
+        self._eco=None
 
         self._valid_serial_number=None
         self._none_mo_date=None

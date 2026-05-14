@@ -20,5 +20,6 @@ def format_values_for_return(df:Product):
             "Success": 1 if df._success else 0,
             "Contains_C": 1 if df._contains_C else 0,
             "Contains_R": 1 if df._contains_R else 0,
+            "ECO": df._eco,
             "DateMaxSearch": datetime.strftime(df._max_realease_date, "%d/%m/%Y")
         }
