@@ -5,6 +5,8 @@ class Product:
         self._max_realease_date=None
 
         self._valid_serial_number=None
+        self._none_mo_date=None
+        
         self._serial_number_data=None
         self._part_number_data_with_R_or_C=None
         self._part_number_data=None

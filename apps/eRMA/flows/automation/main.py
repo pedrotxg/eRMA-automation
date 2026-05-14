@@ -64,6 +64,15 @@ if __name__ == "__main__":
 
             # Get data from serial number
             erma.get_product_information()
+            
+            if product._none_mo_date:
+                base_sn.loc[i, "Success"] = 1
+                base_sn.loc[i, "Contains_C"] = 0
+                base_sn.loc[i, "Contains_R"] = 0
+                base_sn.loc[i, "DateMaxSearch"] = "SEM_MO_DATE"
+                export_files(df=base_sn, path=str(output_file))
+                product._clear_data()
+                continue
 
             # Consult part number
             erma.search_part_number()
@@ -78,11 +87,10 @@ if __name__ == "__main__":
             product._clear_data()
 
         except Exception as e:
-            tb=tb=traceback.format_exc()
             base_sn.loc[i, "Success"] = 0
             base_sn.loc[i, "Contains_C"] = "EXECUTION_ERROR"
             base_sn.loc[i, "Contains_R"] = "EXECUTION_ERROR"
-            base_sn.loc[i, "DateMaxSearch"] = str(tb)
+            base_sn.loc[i, "DateMaxSearch"] = str(e)
 
             export_files(df=base_sn, path=str(output_file))
             product._clear_data()

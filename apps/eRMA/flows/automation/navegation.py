@@ -101,7 +101,13 @@ class SystemERMA:
                 raise RuntimeError("Cannot proceed without a Serial Number.")
 
         part_number=self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["pos"], parent_element=True).split(":")[1].strip()
-        max_realease_date = self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["pos"], parent_element=True).split(":")[1].strip()
+        try:
+            max_realease_date = self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["pos"], parent_element=True).split(":")[1].strip()
+        except:
+            max_realease_date = "None MO_DATE"
+
+        if max_realease_date == "None MO_DATE":
+            self._product._none_mo_date = True
 
         serial_number_data = {
             "product_information": {
