@@ -103,6 +103,7 @@ class SystemERMA:
         part_number=self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["path"],pos=eRMA.SERIAL_NUMBER_INFORMATION.PRODUCT.PRODUCT_NAME["pos"], parent_element=True).split(":")[1].strip()
         try:
             max_realease_date = self.pw.get_text_by_pos(seletor=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["path"], pos=eRMA.SERIAL_NUMBER_INFORMATION.WARRANTY.M_O_DATE["pos"], parent_element=True).split(":")[1].strip()
+            self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
         except:
             max_realease_date = "None MO_DATE"
 
@@ -136,9 +137,6 @@ class SystemERMA:
 
         self._product._part_number=part_number
         self._product._serial_number_data=serial_number_data
-
-        if max_realease_date != "None MO_DATE":
-            self._product._max_realease_date=datetime.strptime(max_realease_date,"%m/%d/%Y")
 
         return serial_number_data
 
